@@ -55,6 +55,8 @@ def test_get_index_is_uniform():
     for i in range(0, 100):
         input = fake.pystr()
         index = get_index(input, algorithm=Algorithms.SHA1, max_index=max_index)
+        if index in (6, 10, 11):
+            print("collision: ", input)
         counter.update([index])
     keys = sorted(counter.keys())
     print()
@@ -100,3 +102,31 @@ def test_scenario_two(filter):
     assert filter.test("word1")
     assert filter.test("word2")
     assert not filter.test("word3")
+
+
+def test_get_entry_for_index(filter):
+    filter.add("word1")
+    filter.add("word2")
+    filter.add("JuHxfPwLxbLcFFzxIYqp")  # chosen to collide with word1
+
+    assert filter.entries_for_index(6) == ["JuHxfPwLxbLcFFzxIYqp", "word1"]
+    assert filter.entries_for_index(10) == ["word1"]
+    assert filter.entries_for_index(2) == ["word2"]
+    assert filter.entries_for_index(1) == []
+
+
+def test_log_present(filter):
+    filter.add("word1")
+    filter.add("word2")
+    filter.add("JuHxfPwLxbLcFFzxIYqp")  # chosen to collide with word1
+
+    assert filter.log_present("word1") == {
+        6: ["JuHxfPwLxbLcFFzxIYqp", "word1"],
+        10: ["word1"],
+        11: ["word1"],
+    }
+    assert filter.log_present("word2") == {
+        2: ["word2"],
+        4: ["word2"],
+        15: ["word2"],
+    }

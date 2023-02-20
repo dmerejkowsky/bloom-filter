@@ -1,4 +1,5 @@
 from enum import Enum
+from collections import defaultdict
 import hashlib
 
 
@@ -30,13 +31,18 @@ class Filter:
     def __init__(self, max_index):
         self.max_index = max_index
         self.indexes = set()
+        # Keep which word was assotiated with wich index
+        self._log = defaultdict(list)
 
     def add(self, word):
         """
-        Add a word to the table.
+        Add a word to the filter.
 
         """
-        self.indexes.update(self._get_indexes(word))
+        indexes = list(self._get_indexes(word))
+        for index in indexes:
+            self._log[index].append(word)
+        self.indexes.update(indexes)
 
     def test(self, word):
         """
@@ -44,10 +50,20 @@ class Filter:
 
         Note: this may return True even if the world
         has *not* been added if you're unlucky and got
-        SHA collisions
+        3 SHA collisions
         """
         indexes = set(self._get_indexes(word))
         return indexes.issubset(self.indexes)
+
+    def entries_for_index(self, index):
+        return sorted(self._log.get(index, []))
+
+    def log_present(self, word):
+        res = {}
+        indexes = self._get_indexes(word)
+        for index in indexes:
+            res[index] = self.entries_for_index(index)
+        return res
 
     def _get_indexes(self, word):
         """
