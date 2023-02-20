@@ -32,22 +32,27 @@ class Filter:
         self.indexes = set()
 
     def add(self, word):
-        """Add a word to the table.
+        """
+        Add a word to the table.
 
-        Note: this mutates self.indexes - which means I'm not sure we can
-        call add() several times before calling test - the spec does not
-        explicitely say - but the drawing seems to indicate that calling add()
-        for is fine
         """
         self.indexes.update(self._get_indexes(word))
 
     def test(self, word):
+        """
+        Check if a word has already been added
+
+        Note: this may return True even if the world
+        has *not* been added if you're unlucky and got
+        SHA collisions
+        """
         indexes = set(self._get_indexes(word))
         return indexes.issubset(self.indexes)
 
     def _get_indexes(self, word):
-        """Returns an iterotar for all the indexes of the given word,
-        one per algorithm in the Algorithms enum
+        """
+        Returns an iterotar for all the indexes of the given word, one
+        per algorithm in the Algorithms enum
         """
         return (
             get_index(word, algorithm=algorithm, max_index=self.max_index)
