@@ -59,11 +59,8 @@ class Filter:
         return sorted(self._log.get(index, []))
 
     def log_present(self, word):
-        res = {}
         indexes = self._get_indexes(word)
-        for index in indexes:
-            res[index] = self.entries_for_index(index)
-        return res
+        return {index: self.entries_for_index(index) for index in indexes}
 
     def _get_indexes(self, word):
         """
