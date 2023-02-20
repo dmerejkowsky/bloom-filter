@@ -1,7 +1,15 @@
 from collections import Counter
+
 import pytest
 from faker import Faker
-from bloom import hash_input, Algorithms, get_index
+
+from bloom import Algorithms, Filter, get_index, hash_input
+
+
+@pytest.fixture
+def filter():
+    max_index = 16
+    return Filter(max_index)
 
 
 def test_sha1():
@@ -52,3 +60,43 @@ def test_get_index_is_uniform():
     print()
     for k in keys:
         print(k, "*" * counter[k])
+
+
+def test_adding_word1(filter):
+    input = "word1"
+
+    filter.add(input)
+
+    assert filter.indexes == {6, 10, 11}
+
+
+def test_returns_false_when_word_has_not_been_added(filter):
+    max_index = 16
+
+    result = filter.test("word1")
+
+    assert not result, f"'word1' should *not* have been found"
+
+
+def test_returns_true_when_word_has_been_added(filter):
+    filter.add("word2")
+
+    result = filter.test("word2")
+
+    assert result, f"'word2' should have been found"
+
+
+def test_scenario_one(filter):
+    assert not filter.test("word1")
+    filter.add("word1")
+    assert filter.test("word1")
+    assert not filter.test("word2")
+
+
+def test_scenario_two(filter):
+    filter.add("word1")
+    filter.add("word2")
+
+    assert filter.test("word1")
+    assert filter.test("word2")
+    assert not filter.test("word3")
